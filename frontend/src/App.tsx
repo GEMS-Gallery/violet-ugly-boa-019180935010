@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button, TextField, Grid, Paper, CircularProgress } from '@mui/material';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import BackspaceIcon from '@mui/icons-material/Backspace';
@@ -20,6 +20,21 @@ const App: React.FC = () => {
   const [firstOperand, setFirstOperand] = useState<number | null>(null);
   const [operation, setOperation] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [kittenImages, setKittenImages] = useState<string[]>([]);
+
+  useEffect(() => {
+    const fetchKittenImages = async () => {
+      const images = await Promise.all(
+        Array(10).fill(0).map(() => 
+          fetch('/api/get_unsplash_image?query=kitten')
+            .then(res => res.json())
+            .then(data => data.url)
+        )
+      );
+      setKittenImages(images);
+    };
+    fetchKittenImages();
+  }, []);
 
   const handleNumberClick = (num: string) => {
     setDisplay((prev) => (prev === '0' ? num : prev + num));
@@ -73,14 +88,16 @@ const App: React.FC = () => {
           style={{ marginBottom: '20px' }}
         />
         <Grid container spacing={1}>
-          {['7', '8', '9', '4', '5', '6', '1', '2', '3', '0', '.'].map((num) => (
+          {['7', '8', '9', '4', '5', '6', '1', '2', '3', '0', '.'].map((num, index) => (
             <Grid item xs={3} key={num}>
               <Button
                 fullWidth
                 variant="contained"
                 onClick={() => handleNumberClick(num)}
+                className="kitten-button"
+                style={{ backgroundImage: `url(${kittenImages[index % 10]})` }}
               >
-                {num}
+                <span>{num}</span>
               </Button>
             </Grid>
           ))}
